@@ -4,7 +4,7 @@ import torch
 from torch.utils.data import Dataset
 
 
-TAPE_PATH = 'dataset/tape_expla_graphs'
+TAPE_PATH = 'dataset/expla_graphs'
 
 
 class ExplaGraphsDataset(Dataset):

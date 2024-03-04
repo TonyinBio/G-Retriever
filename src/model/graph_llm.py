@@ -31,7 +31,7 @@ class GraphLLM(torch.nn.Module):
 
         print('Loading LLAMA')
         kwargs = {
-            "max_memory": {0: '20GiB', 1: '20GiB', 2: '20GiB', 3: '20GiB'},
+            # "max_memory": {0: '20GiB', 1: '20GiB', 2: '20GiB', 3: '20GiB'},
             "device_map": "auto",
             "revision": "main",
         }
@@ -73,6 +73,7 @@ class GraphLLM(torch.nn.Module):
 
         self.model = model
         print('Finish loading LLAMA!')
+        print(self.model.device)
 
         self.graph_encoder = load_gnn_model[args.gnn_model_name](
             in_channels=args.gnn_in_dim,
@@ -125,8 +126,8 @@ class GraphLLM(torch.nn.Module):
         # encode special tokens
         eos_tokens = self.tokenizer(EOS, add_special_tokens=False)
         eos_user_tokens = self.tokenizer(EOS_USER, add_special_tokens=False)
-        bos_embeds = self.word_embedding(self.tokenizer(BOS, add_special_tokens=False, return_tensors='pt').input_ids[0])
-        pad_embeds = self.word_embedding(torch.tensor(self.tokenizer.pad_token_id)).unsqueeze(0)
+        bos_embeds = self.word_embedding(self.tokenizer(BOS, add_special_tokens=False, return_tensors='pt').to(self.model.device).input_ids[0])
+        pad_embeds = self.word_embedding(torch.tensor(self.tokenizer.pad_token_id, device=self.model.device)).unsqueeze(0)
 
         # encode graphs
         graph_embeds = self.encode_graphs(samples)
@@ -178,8 +179,8 @@ class GraphLLM(torch.nn.Module):
 
         # encode special tokens
         eos_user_tokens = self.tokenizer(EOS_USER, add_special_tokens=False)
-        bos_embeds = self.word_embedding(self.tokenizer(BOS, add_special_tokens=False, return_tensors='pt').input_ids[0])
-        pad_embeds = self.word_embedding(torch.tensor(self.tokenizer.pad_token_id)).unsqueeze(0)
+        bos_embeds = self.word_embedding(self.tokenizer(BOS, add_special_tokens=False, return_tensors='pt').to(self.model.device).input_ids[0])
+        pad_embeds = self.word_embedding(torch.tensor(self.tokenizer.pad_token_id, device=self.model.device)).unsqueeze(0)
 
         # encode graphs
         graph_embeds = self.encode_graphs(samples)
