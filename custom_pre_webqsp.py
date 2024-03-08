@@ -7,6 +7,7 @@ from datasets import load_dataset, concatenate_datasets
 from torch_geometric.data import Data
 from src.utils.lm_modeling import load_model, load_text2embedding
 
+import time
 
 model_name = 'sbert'
 path = 'dataset/webqsp'
@@ -44,10 +45,10 @@ def step_one():
 def generate_split():
     
     dataset = load_dataset("rmanluo/RoG-webqsp")
-
-    train_indices = np.arange(len(dataset['train']))
-    val_indices = np.arange(len(dataset['validation'])) + len(dataset['train'])
-    test_indices = np.arange(len(dataset['test'])) + len(dataset['train']) + len(dataset['validation'])
+    last_index = 1748
+    
+    all_indices = np.arange(last_index + 1)
+    train_indices, val_indices, test_indices = torch.utils.data.random_split(all_indices, [0.6, 0.06, 0.34])
 
     print("# train samples: ", len(train_indices))
     print("# val samples: ", len(val_indices))
@@ -70,15 +71,9 @@ def generate_split():
 def step_two():
     dataset = load_dataset("rmanluo/RoG-webqsp")
     dataset = concatenate_datasets([dataset['train'], dataset['validation'], dataset['test']])
-    questions = [i['question'] for i in dataset]
 
     model, tokenizer, device = load_model[model_name]()
     text2embedding = load_text2embedding[model_name]
-
-    # encode questions
-    print('Encoding questions...')
-    q_embs = text2embedding(model, tokenizer, device, questions)
-    torch.save(q_embs, f'{path}/q_embs.pt')
 
     print('Encoding graphs...')
     os.makedirs(path_graphs, exist_ok=True)
@@ -87,18 +82,14 @@ def step_two():
         # nodes
         nodes = pd.read_csv(f'{path_nodes}/{index}.csv')
         edges = pd.read_csv(f'{path_edges}/{index}.csv')
+
         nodes.fillna({"node_attr": ""}, inplace=True)
         x = text2embedding(model, tokenizer, device, nodes.node_attr.tolist())
-
         # edges
         edge_attr = text2embedding(model, tokenizer, device, edges.edge_attr.tolist())
         edge_index = torch.LongTensor([edges.src.tolist(), edges.dst.tolist()])
 
         pyg_graph = Data(x=x, edge_index=edge_index, edge_attr=edge_attr, num_nodes=len(nodes))
-        torch.save(pyg_graph, f'{path_graphs}/{index}.pt')
-
 
 if __name__ == '__main__':
-    step_one()
-    step_two()
     generate_split()
