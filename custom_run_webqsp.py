@@ -61,6 +61,7 @@ def main(args):
             sgraph_file = f"sgraph{graph_id}_{user_question}.txt"
             open(sgraph_file, "w").write(text_subg)
             print(f"Printed subgraph to {sgraph_file}")
+            
             output = model.inference(batch)
             print()
             print("Output:")
@@ -68,7 +69,7 @@ def main(args):
             # print("Ground Truth:")
             # print(output["label"])
 
-def assemble_batch(user_question, graph_id):
+def assemble_batch(user_question: str, graph_id):
     question = f'Question: {user_question}\nAnswer: '
 
     graph = torch.load(f'{PATH_GRAPHS}/{graph_id}.pt')
