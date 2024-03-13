@@ -51,7 +51,6 @@ coverage.xml
 
 # Output
 *.out
-*.txt
 
 # Sphinx documentation
 docs/_build/

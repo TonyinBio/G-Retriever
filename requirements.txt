@@ -1,0 +1,15 @@
+peft
+pandas
+ogb
+transformers
+wandb
+sentencepiece
+torch_geometric
+datasets
+pcst_fast
+gensim
+
+pyvis
+huggingface_hub
+llama-index
+chainlit
